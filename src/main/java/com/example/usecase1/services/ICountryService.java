@@ -4,5 +4,5 @@ import com.example.usecase1.entities.Country;
 import java.util.List;
 
 public interface ICountryService {
-    List<Country> fetchCountries();
+    List<Country> fetchCountries(Integer limit);
 }

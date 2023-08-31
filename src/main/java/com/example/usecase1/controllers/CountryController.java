@@ -22,9 +22,9 @@ public class CountryController {
             @RequestParam(required = false) Optional<String> param1,
             @RequestParam(required = false) Optional<String> param2,
             @RequestParam(required = false) Optional<String> param3,
-            @RequestParam(required = false) Optional<String> param4) {
+            @RequestParam(required = false) Integer limit) {
 
         // Do something with parameters param1, param2, param3, param4 if needed
-        return countryService.fetchCountries();
+        return countryService.fetchCountries(limit);
     }
 }

@@ -11,12 +11,13 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 @Service
 public class CountryServiceImpl implements ICountryService {
 
     @Override
-    public List<Country> fetchCountries() {
+    public List<Country> fetchCountries(Integer limit) {
         RestTemplate restTemplate = new RestTemplate();
 
         ResponseEntity<List<Country>> response = restTemplate.exchange(
@@ -31,10 +32,13 @@ public class CountryServiceImpl implements ICountryService {
         if (countries == null) {
             return new ArrayList<>();
         }
+        if (limit != null) {
+            return countries.stream().limit(limit).collect(Collectors.toList());
+        }
         return countries;
     }
 
-    private Predicate<Country> filterCountriesByNamePredicate(String searchString) {
+    public Predicate<Country> filterCountriesByNamePredicate(String searchString) {
         return country -> {
             if (country == null || country.getName() == null || country.getName().getCommon() == null) {
                 return false;

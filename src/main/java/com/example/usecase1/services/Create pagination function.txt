@@ -1,0 +1,86 @@
+Now create a funcition that accept a number and retrieve first n records (e.g., providing number `15` I should receive 15 first records from API).
+
+ChatGPT
+Certainly! To limit the number of records you retrieve from the API to the first n records, you can add a limit operation to your existing code that calls the API. Here's a modification to the service class method that fetches data from the API and limits it to the first n records:
+
+java
+Copy code
+import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
+
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+@Service
+public class CountryService implements ICountryService {
+
+    private static final String REST_COUNTRIES_URL = "https://restcountries.com/v3.1/all";
+
+    public List<Country> getCountries(int limit) {
+        RestTemplate restTemplate = new RestTemplate();
+        Country[] countriesArray = restTemplate.getForObject(REST_COUNTRIES_URL, Country[].class);
+        List<Country> countries = Stream.of(countriesArray != null ? countriesArray : new Country[0])
+                                        .limit(limit)  // Limiting to first 'n' records
+                                        .collect(Collectors.toList());
+
+        return countries;
+    }
+}
+Explanation:
+Limiting the Number of Records: The .limit(limit) operation limits the number of records to the first n records, where n is provided as an argument to the method.
+
+Null Handling: If the API returns null, an empty list is created using new Country[0].
+
+Type Conversion: The array of countries is converted to a list after applying the limit.
+
+Now, when you call getCountries(15), you'll get the first 15 records from the API. You can also adapt this code to be part of a larger workflow where you first apply other filters and sorts, and then limit the results.
+
+
+
+
+User
+The parameter can be also null please rewrite it considering that
+ChatGPT
+Certainly, if the parameter can be null, you can conditionally apply the .limit() operation based on whether the limit parameter is null or not.
+
+Here's how you can modify the getCountries method to accommodate a possibly null limit:
+
+java
+Copy code
+import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
+
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+@Service
+public class CountryService implements ICountryService {
+
+    private static final String REST_COUNTRIES_URL = "https://restcountries.com/v3.1/all";
+
+    public List<Country> getCountries(Integer limit) {  // Notice the Integer type, which can be null
+        RestTemplate restTemplate = new RestTemplate();
+        Country[] countriesArray = restTemplate.getForObject(REST_COUNTRIES_URL, Country[].class);
+
+        Stream<Country> countryStream = Stream.of(countriesArray != null ? countriesArray : new Country[0]);
+
+        // Conditionally apply the limit if the parameter is not null
+        if (limit != null) {
+            countryStream = countryStream.limit(limit);
+        }
+
+        return countryStream.collect(Collectors.toList());
+    }
+}
+Explanation:
+Integer Type: Changed the int parameter to Integer so it can accept null.
+
+Conditional Limit: Added a conditional to only apply the .limit(limit) operation if limit is not null.
+
+Type Conversion and Null Handling: The array of countries is converted to a Stream. If the array is null, an empty stream is created.
+
+This way, if you call getCountries(null), you'll get all the records from the API. If you call getCountries(15), you'll get the first 15 records.
