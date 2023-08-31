@@ -1,0 +1,92 @@
+Hey ChatGPT can you help me create a Spring Boot Project on Java 11. That will be able to call other rest endpoints and serve the data in JSON format.
+
+Certainly, creating a Spring Boot project to call other REST endpoints and serve the data in JSON format is a common use-case. Below are the steps to set up such a project:
+
+Project Setup
+Maven/Gradle: Start by creating a new Spring Boot project using Maven or Gradle. You can do this using the Spring Initializr or your favorite IDE.
+
+Dependencies: Add the following dependencies to your pom.xml (for Maven) or build.gradle (for Gradle):
+
+For Maven (pom.xml):
+
+xml
+Copy code
+<dependencies>
+    <!-- Spring Boot Web Starter -->
+    <dependency>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-web</artifactId>
+    </dependency>
+
+    <!-- Spring Boot Test Starter -->
+    <dependency>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-test</artifactId>
+        <scope>test</scope>
+    </dependency>
+
+    <!-- Rest Template for HTTP Calls -->
+    <dependency>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-data-rest</artifactId>
+    </dependency>
+</dependencies>
+For Gradle (build.gradle):
+
+groovy
+Copy code
+dependencies {
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation 'org.springframework.boot:spring-boot-starter-data-rest'
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+}
+Java Code
+Create the following Java classes:
+
+RestTemplateConfig: This will define the RestTemplate bean for making HTTP calls.
+
+java
+Copy code
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.web.client.RestTemplate;
+
+@Configuration
+public class RestTemplateConfig {
+    @Bean
+    public RestTemplate restTemplate() {
+        return new RestTemplate();
+    }
+}
+ApiController: This is where we'll make calls to other REST endpoints and serve the data.
+
+java
+Copy code
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.client.RestTemplate;
+
+@RestController
+@RequestMapping("/api")
+public class ApiController {
+
+    @Autowired
+    private RestTemplate restTemplate;
+
+    @GetMapping("/fetch")
+    public ResponseEntity<String> fetchData() {
+        String otherServiceUrl = "http://jsonplaceholder.typicode.com/todos/1";  // Replace with your actual REST API endpoint
+
+        ResponseEntity<String> response = restTemplate.getForEntity(otherServiceUrl, String.class);
+
+        return ResponseEntity.ok(response.getBody());
+    }
+}
+Run the Application
+Build the project.
+Run the main method in the generated Spring Boot Application class.
+Navigate to http://localhost:8080/api/fetch in your web browser or use a tool like curl to test the API. You should see the JSON data fetched from the external REST API.
+That's a very basic example. You can extend this to include better error handling, make POST/PUT/DELETE requests, or transform the data before serving it.
