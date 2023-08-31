@@ -1,0 +1,94 @@
+Now add the name, population and sort parameters to the endpoint and modify the service method to accept them and called the respective functions
+
+ChatGPT
+Certainly! I'll show you how to modify a Spring Boot REST endpoint and service to accept the name, population, limit, and sort parameters.
+
+Updated Controller Class
+Let's first update your REST controller class to accept the parameters.
+
+java
+Copy code
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
+import java.util.List;
+
+@RestController
+public class CountryController {
+
+    @Autowired
+    private ICountryService countryService;
+
+    @GetMapping("/countries")
+    public List<Country> getCountries(
+            @RequestParam(required = false) String name,
+            @RequestParam(required = false) Integer population,
+            @RequestParam(required = false) Integer limit,
+            @RequestParam(required = false) String sort) {
+
+        return countryService.getCountries(name, population, limit, sort);
+    }
+}
+Updated Service Interface
+Now let's also update the service interface to accommodate these parameters.
+
+java
+Copy code
+import java.util.List;
+
+public interface ICountryService {
+    List<Country> getCountries(String name, Integer population, Integer limit, String sort);
+}
+Updated Service Class
+Finally, update the CountryService class to use these parameters and call the respective functions to filter and sort the countries.
+
+java
+Copy code
+import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
+
+import java.util.List;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+@Service
+public class CountryService implements ICountryService {
+
+    private static final String REST_COUNTRIES_URL = "https://restcountries.com/v3.1/all";
+
+    @Override
+    public List<Country> getCountries(String name, Integer population, Integer limit, String sort) {
+        RestTemplate restTemplate = new RestTemplate();
+        Country[] countriesArray = restTemplate.getForObject(REST_COUNTRIES_URL, Country[].class);
+
+        Stream<Country> countryStream = Stream.of(countriesArray != null ? countriesArray : new Country[0]);
+
+        Predicate<Country> nameFilter = filterCountriesByNamePredicate(name);
+        Predicate<Country> populationFilter = filterCountriesByPopulationPredicate(population);
+        Comparator<Country> nameComparator = getCountryNameComparator(sort);
+
+        countryStream = countryStream.filter(nameFilter.and(populationFilter));
+
+        if (limit != null) {
+            countryStream = countryStream.limit(limit);
+        }
+
+        return countryStream.sorted(nameComparator).collect(Collectors.toList());
+    }
+
+    // Existing helper methods for filter and sort should be here
+    // ...
+}
+Explanation
+The REST endpoint (/countries) now accepts four optional parameters: name, population, limit, and sort.
+
+The ICountryService interface and CountryService class methods are updated to accept these parameters.
+
+Inside CountryService, I used the helper methods (filterCountriesByNamePredicate, filterCountriesByPopulationPredicate, getCountryNameComparator) to create the filters and sort rules based on the parameters.
+
+These are then applied to the stream of countries fetched from the API.
+
+Now your endpoint should be able to handle requests like /countries?name=SomeName&population=10000&limit=10&sort=ascend to get filtered and sorted results.

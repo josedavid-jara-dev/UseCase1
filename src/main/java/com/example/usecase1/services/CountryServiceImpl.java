@@ -17,7 +17,7 @@ import java.util.stream.Collectors;
 public class CountryServiceImpl implements ICountryService {
 
     @Override
-    public List<Country> fetchCountries(Integer limit) {
+    public List<Country> fetchCountries(String name, Integer population, String sort, Integer limit) {
         RestTemplate restTemplate = new RestTemplate();
 
         ResponseEntity<List<Country>> response = restTemplate.exchange(
@@ -32,8 +32,19 @@ public class CountryServiceImpl implements ICountryService {
         if (countries == null) {
             return new ArrayList<>();
         }
+        Predicate<Country> nameFilter = filterCountriesByNamePredicate(name);
+        Predicate<Country> populationFilter = filterCountriesByPopulationPredicate(population);
+        Comparator<Country> nameComparator = sortCountryByNameComparator(sort);
+        countries = countries
+                .stream()
+                .filter(nameFilter.and(populationFilter))
+                .sorted(nameComparator)
+                .collect(Collectors.toList());
         if (limit != null) {
-            return countries.stream().limit(limit).collect(Collectors.toList());
+            return countries
+                    .stream()
+                    .limit(limit)
+                    .collect(Collectors.toList());
         }
         return countries;
     }
@@ -50,10 +61,13 @@ public class CountryServiceImpl implements ICountryService {
         };
     }
 
-    public Predicate<Country> filterCountriesByPopulationPredicate(int populationLimit) {
+    public Predicate<Country> filterCountriesByPopulationPredicate(Integer populationLimit) {
         return country -> {
             if (country == null || country.getPopulation() == null) {
                 return false;
+            }
+            if (populationLimit == null) {
+                return true;
             }
             return country.getPopulation() < (populationLimit * 1000000);  // populationLimit is in millions
         };
