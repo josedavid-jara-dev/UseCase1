@@ -8,6 +8,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.function.Predicate;
 
@@ -52,5 +53,13 @@ public class CountryServiceImpl implements ICountryService {
             }
             return country.getPopulation() < (populationLimit * 1000000);  // populationLimit is in millions
         };
+    }
+
+    public Comparator<Country> sortCountryByNameComparator(String sortOrder) {
+        if ("descend".equalsIgnoreCase(sortOrder)) {
+            return (country1, country2) -> country2.getName().getCommon().compareTo(country1.getName().getCommon());
+        }
+        // Default to ascending sort
+        return Comparator.comparing(country -> country.getName().getCommon());
     }
 }

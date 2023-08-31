@@ -1,0 +1,48 @@
+Now create a new funtion that returns a comparartor and sorts the countries by common filed in the name object.o	The sort should accept string ` ascend or descend ` and sort countries name by provided attribute (e.g., providing attribute ascend all countries should be sorted from A to Z)
+
+ChatGPT
+You can create a function that returns a Comparator<Country> based on the provided "ascend" or "descend" string. This comparator can then be used in your existing sorting logic. Here's how you can do it:
+
+Function to Return Comparator
+java
+Copy code
+import java.util.Comparator;
+
+public Comparator<Country> getCountryNameComparator(String sortOrder) {
+    if ("descend".equalsIgnoreCase(sortOrder)) {
+        return (country1, country2) -> country2.getName().getCommon().compareTo(country1.getName().getCommon());
+    }
+    // Default to ascending sort
+    return Comparator.comparing(country -> country.getName().getCommon());
+}
+Explanation
+The function takes a string argument, sortOrder, which can be either "ascend" or "descend".
+
+If sortOrder is "descend", the function returns a comparator that sorts countries in descending order based on the common field in the name object.
+
+If sortOrder is anything else (or if it is not provided), the function defaults to returning a comparator that sorts countries in ascending order.
+
+Using the Comparator in Existing Code
+You can use the returned Comparator in your existing sorting logic. For example, in your applyFiltersAndSort function:
+
+java
+Copy code
+import java.util.List;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
+
+public List<Country> applyFiltersAndSort(List<Country> countries, String nameSearchString, Integer populationLimit, String sortOrder) {
+    if (countries == null || countries.isEmpty()) {
+        return countries;
+    }
+
+    Predicate<Country> nameFilter = filterCountriesByNamePredicate(nameSearchString);
+    Predicate<Country> populationFilter = filterCountriesByPopulationPredicate(populationLimit);
+    Comparator<Country> nameComparator = getCountryNameComparator(sortOrder);
+
+    return countries.stream()
+            .filter(nameFilter.and(populationFilter))
+            .sorted(nameComparator)
+            .collect(Collectors.toList());
+}
+This updated applyFiltersAndSort function now sorts the list of Country objects based on the provided sortOrder ("ascend" or "descend").
