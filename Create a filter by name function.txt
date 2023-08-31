@@ -92,3 +92,44 @@ Sorting: The function sorts the countries by the common name in alphabetical ord
 Optional Parameter: The function also accepts an Optional<String> for the search string. This makes it easy to handle cases where a search string might or might not be provided.
 
 You can now use this function wherever you need to sort and filter a list of Country objects. Just pass the list and the optional search string to this function.
+
+Convert it to predicate
+ChatGPT
+You can use Java's Predicate interface to create a reusable filter that can be applied to a list of Country objects. Here's how you can convert the existing filter logic to a Predicate<Country>:
+
+java
+Copy code
+import java.util.function.Predicate;
+
+public Predicate<Country> filterCountriesByNamePredicate(String searchString) {
+    return country -> {
+        if (country == null || country.getName() == null || country.getName().getCommon() == null) {
+            return false;
+        }
+        if (searchString == null) {
+            return true;
+        }
+        return country.getName().getCommon().toLowerCase().contains(searchString.toLowerCase());
+    };
+}
+With this Predicate, you can now filter and sort a list of Country objects as follows:
+
+java
+Copy code
+import java.util.Comparator;
+import java.util.List;
+import java.util.stream.Collectors;
+
+public List<Country> applyFilterAndSort(List<Country> countries, String searchString) {
+    if (countries == null || countries.isEmpty()) {
+        return countries;
+    }
+
+    Predicate<Country> filter = filterCountriesByNamePredicate(searchString);
+
+    return countries.stream()
+            .filter(filter)
+            .sorted(Comparator.comparing(country -> country.getName().getCommon()))
+            .collect(Collectors.toList());
+}
+Here, the applyFilterAndSort function creates a Predicate<Country> by calling filterCountriesByNamePredicate with the search string. Then it uses this Predicate to filter the list of Country objects and sorts them as before.

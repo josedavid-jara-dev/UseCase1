@@ -10,6 +10,7 @@ import org.springframework.web.client.RestTemplate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 @Service
@@ -34,21 +35,15 @@ public class CountryServiceImpl implements ICountryService {
         return countries;
     }
 
-    private List<Country> filterCountriesByName(List<Country> countries, Optional<String> maybeName) {
-        if (countries == null || countries.isEmpty()) {
-            return countries;
-        }
-
-        // Filter
-        return countries.stream()
-                .filter(country -> {
-                    if (country == null || country.getName() == null || country.getName().getCommon() == null) {
-                        return false;
-                    }
-
-                    return maybeName.map(str -> country.getName().getCommon().toLowerCase().contains(str.toLowerCase()))
-                            .orElse(true);
-                })
-                .collect(Collectors.toList());
+    private Predicate<Country> filterCountriesByNamePredicate(String searchString) {
+        return country -> {
+            if (country == null || country.getName() == null || country.getName().getCommon() == null) {
+                return false;
+            }
+            if (searchString == null) {
+                return true;
+            }
+            return country.getName().getCommon().toLowerCase().contains(searchString.toLowerCase());
+        };
     }
 }
