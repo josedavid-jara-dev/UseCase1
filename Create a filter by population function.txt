@@ -1,0 +1,71 @@
+First add a new field to the country object called population. Then create a function that will filter by population.o	The filter should search for countries where the population is less than provided number from attributes in the millions of people (e.g., by providing value `10`, I should find countries with a population less than 10m)
+
+ChatGPT
+You can start by adding a new population field to your Country class.
+
+Updated Country.java
+java
+Copy code
+public class Country {
+    private Name name;
+    private Integer population;  // Added new field for population
+
+    // ... Existing code
+
+    public Integer getPopulation() {
+        return population;
+    }
+
+    public void setPopulation(Integer population) {
+        this.population = population;
+    }
+
+    // ... Existing code
+}
+Next, you can create a Predicate<Country> to filter countries by population.
+
+Predicate for Population
+java
+Copy code
+import java.util.function.Predicate;
+
+public Predicate<Country> filterCountriesByPopulationPredicate(int populationLimit) {
+    return country -> {
+        if (country == null || country.getPopulation() == null) {
+            return false;
+        }
+        return country.getPopulation() < (populationLimit * 1000000);  // populationLimit is in millions
+    };
+}
+Finally, you can create a function that applies both the name filter and the population filter, and then sorts the countries by name.
+
+Function to Apply Both Filters and Sort
+java
+Copy code
+import java.util.Comparator;
+import java.util.List;
+import java.util.stream.Collectors;
+
+public List<Country> applyFiltersAndSort(List<Country> countries, String nameSearchString, Integer populationLimit) {
+    if (countries == null || countries.isEmpty()) {
+        return countries;
+    }
+
+    Predicate<Country> nameFilter = filterCountriesByNamePredicate(nameSearchString);
+    Predicate<Country> populationFilter = filterCountriesByPopulationPredicate(populationLimit);
+
+    return countries.stream()
+            .filter(nameFilter.and(populationFilter))
+            .sorted(Comparator.comparing(country -> country.getName().getCommon()))
+            .collect(Collectors.toList());
+}
+Explanation:
+Two Predicates: The function creates two Predicate<Country> objects, one for the name and one for the population.
+
+Combined Filter: The function applies both filters using the .and() method to combine them.
+
+Sorting: Finally, the function sorts the list by the common field in the name object.
+
+Population in Millions: The population filter multiplies the provided limit by 1,000,000 to convert it to the same unit as the population field in the Country object.
+
+You can use this applyFiltersAndSort function to filter an existing list of Country objects by both name and population, and also to sort them by name.

@@ -9,9 +9,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.function.Predicate;
-import java.util.stream.Collectors;
 
 @Service
 public class CountryServiceImpl implements ICountryService {
@@ -44,6 +42,15 @@ public class CountryServiceImpl implements ICountryService {
                 return true;
             }
             return country.getName().getCommon().toLowerCase().contains(searchString.toLowerCase());
+        };
+    }
+
+    public Predicate<Country> filterCountriesByPopulationPredicate(int populationLimit) {
+        return country -> {
+            if (country == null || country.getPopulation() == null) {
+                return false;
+            }
+            return country.getPopulation() < (populationLimit * 1000000);  // populationLimit is in millions
         };
     }
 }
