@@ -16,10 +16,14 @@ import java.util.stream.Collectors;
 @Service
 public class CountryServiceImpl implements ICountryService {
 
+    private final RestTemplate restTemplate;
+
+    public CountryServiceImpl(RestTemplate restTemplate) {
+        this.restTemplate = restTemplate;
+    }
+
     @Override
     public List<Country> fetchCountries(String name, Integer population, String sort, Integer limit) {
-        RestTemplate restTemplate = new RestTemplate();
-
         ResponseEntity<List<Country>> response = restTemplate.exchange(
                 Constants.COUNTRIES_API_URL,
                 HttpMethod.GET,
